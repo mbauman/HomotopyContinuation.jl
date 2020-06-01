@@ -213,7 +213,7 @@ the given system is optimized for evaluation efficiency.
 Compile the given homotopy. Returns a `CompiledHomotopy`.
 """
 compile(F::System; optimizations::Bool = true) =
-    CompiledSystem(optimizations ? optimize(F) : F)
+    CompiledSystem(F) #optimizations ? optimize(F) : F)
 compile(H::Homotopy) = CompiledHomotopy(H)
 
 #############

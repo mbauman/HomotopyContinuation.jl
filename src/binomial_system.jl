@@ -117,8 +117,7 @@ function compute_angular_part!(
     # compute precision necessary
     p = max(maximum(x -> MPZ.sizeinbase(x, 2), H), maximum(x -> MPZ.sizeinbase(x, 2), U))
     prec = max((ceil(Int, (p + 53) / 32)) * 32, 64)
-
-    γ = angle.(b) ./ 2π
+    γ = angle.(big.(b)) ./ 2π
 
     μ = [BigFloat(0.0; precision = prec) for i = 1:n]
     α = γᵢ = BigFloat(0.0; precision = prec)
@@ -169,12 +168,30 @@ function solve!(BSS::BinomialSystemSolver)
     try
         hnf!(BSS.H, BSS.U, BSS.A)
         solve!(BSS, BSS.H, BSS.U)
+        # check result
+        validate_result!(BSS)
     catch e
         isa(e, OverflowError) || rethrow(e)
         hnf!(BSS.H_big, BSS.U_big, BSS.A)
         solve!(BSS, BSS.H_big, BSS.U_big)
     end
     BSS.X
+end
+function validate_result!(BSS)
+    for k in 1:size(BSS.X, 2)
+        for j in 1:size(BSS.A, 2)
+            r = complex(0.0)
+            for i in 1:size(BSS.A, 1)
+                r *= BSS.X[i, k]^BSS.A[i, j]
+            end
+            r -= BSS.b[j]
+
+            if fast_abs(r) > max(fast_abs(BSS.b[j]) * 1e-12, 1e-14)
+                throw(OverflowError("validation_failed"))
+            end
+        end
+    end
+    nothing
 end
 
 function solve!(BSS::BinomialSystemSolver, H::Matrix{<:Integer}, U::Matrix{<:Integer})

@@ -374,6 +374,7 @@ function track(
             max_initial_step_size = 0.2,
             debug = debug,
         )
+        @show retcode
 
         @unpack μ, ω = PT.toric_tracker.state
         if is_success(retcode)

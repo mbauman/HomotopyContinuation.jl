@@ -1,4 +1,4 @@
-export AbstractSystem
+export AbstractSystem, jacobian
 
 """
     AbstractSystem
@@ -27,6 +27,13 @@ ModelKit.nparameters(F::AbstractSystem) = length(parameters(F))
 function ModelKit.System(F::AbstractSystem)
     x, p = variables(F), parameters(F)
     System(F(x, p), x, p, variable_groups(F))
+end
+
+function jacobian(F::AbstractSystem, x, p)
+    u = Vector{Any}(undef, size(F, 1))
+    U = Matrix{Any}(undef, size(F))
+    evaluate_and_jacobian!(u, U, F, x, p)
+    ModelKit.to_smallest_eltype(U)
 end
 
 include("systems/model_kit_system.jl")
