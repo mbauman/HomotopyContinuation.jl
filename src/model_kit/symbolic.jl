@@ -1052,6 +1052,7 @@ end
 Base.iterate(F::System) = iterate(F.expressions)
 Base.iterate(F::System, state) = iterate(F.expressions, state)
 
+jacobian(F::System) = [differentiate(f, v) for f in F.expressions, v in F.variables]
 
 Base.push!(F::System, f::Expression) = (push!(F.expressions, f); F)
 Base.append!(F::System, f::AbstractVector{Expression}) = (append!(F.expressions, f); F)
